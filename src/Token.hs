@@ -6,4 +6,5 @@ data Token =
   | Symbol String
   | Number Int
   | Literal String
+  | Whitespace
   deriving (Eq, Show)

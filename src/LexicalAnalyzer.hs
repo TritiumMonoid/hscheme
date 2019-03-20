@@ -1,21 +1,47 @@
 module LexicalAnalyzer (tokens) where
 
---import Token
---import Data.Maybe
-import qualified Data.Text as T
---import qualified Text.Regex as R
+import Token
+import Data.Maybe
+import Contol.Monad.State
+import qualified Text.Regex as R
 
---isNumber :: String -> Bool
---isNumber = isJust . R.matchRegex (R.mkRegex "^[0-9]+$")
+match :: String -> String -> Bool
+match regex = isJust . (R.matchRegex (R.mkRegex regex))
 
---isSymbol :: String -> Bool
---isSymbol = isJust . R.matchRegex (R.mkRegex "^.+$")
+isNumber = match "[0-9]+"
+isSymbol = match "[A-Za-z0-9]+"
+isOpenParenthesis = match "("
+isCloseParenthesis = match ")"
+isWhitespace = match "\\s+"
 
-tokens :: String -> [String]
-tokens text =
-  map T.unpack
-  $ filter (\token -> not (token == (T.pack " ") || token == (T.pack "")))
-  $ T.splitOn (T.pack " ")
-  $ T.replace (T.pack ")") (T.pack " ) ")
-  $ T.replace (T.pack "(") (T.pack " ( ")
-  $ T.pack text
+classify :: String -> Maybe Token
+classify token
+  | isOpenParenthesis token = Just OpenParenthesis
+  | isCloseParenthesis token = Just CloseParenthesis
+  | isNumber token = Just . Number $ read token
+  | isSymbol token = Just . Symbol $ token
+  | isWhitespace token = Nothing
+  | otherwise = Nothing
+
+bufferToken :: String -> State (Maybe Token, String) String
+bufferToken (char:blob) = do
+  (token, buffer) <- get
+  let buffer' = buffer ++ char
+      token' = classify buffer'
+  if isNothing token'
+    put (token', "")
+    then return blob
+    else do
+    put (token', buffer')
+    bufferToken blob
+bufferToken _ = return ""
+
+bufferTokens :: String -> State [Token] String
+bufferTokens text = do
+  tokens <- get
+  text' <- bufferToken text
+  (token, _) <- get
+  put $ tokens ++ maybeToList token
+
+tokens :: String -> [Token]
+tokens text = [Literal "foo"]
