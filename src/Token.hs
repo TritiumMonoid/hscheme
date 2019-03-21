@@ -3,8 +3,9 @@ module Token where
 data Token =
   OpenParenthesis
   | CloseParenthesis
+  | Define
+  | Quote
   | Symbol String
-  | Number Int
+  | Number String
   | Literal String
-  | Whitespace
   deriving (Eq, Show)
