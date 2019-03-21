@@ -21,7 +21,7 @@ executable hscheme
   -- other-modules:       
   -- other-extensions:    
   build-depends:       base >=4.10 && <4.11
-                     , text
+                     , hashmap
                      , regex-compat
   hs-source-dirs:      src
   default-language:    Haskell2010
