@@ -2,6 +2,7 @@ module LexicalAnalyzer (tokens) where
 
 import Token
 import Data.Maybe
+import Data.List
 import Control.Monad.State
 import qualified Text.Regex as R
 
@@ -9,12 +10,12 @@ match :: String -> String -> Bool
 match regex = isJust . (R.matchRegex (R.mkRegex regex))
 
 isComment = match ";.*$"
-isMultilineComment = match "\\|\\#(.|\n)*?\\#\\|"
+isMultilineComment = match "\\#\\|(.|\n)*?\\|\\#"
 isOpenParenthesis = match "("
 isCloseParenthesis = match ")"
 isQuote = match "'|quote"
 isDefine = match "define"
-isNumber = match "[0-9]"
+isNumber = match "[0-9]+"
 isLiteral = match "\"((\\\")|[^\"])*\""
 isSymbol = match "[^\\s()\\[\\]{}'\";]+"
 
@@ -31,19 +32,26 @@ classify token
   | isSymbol token = Just . Symbol $ token
   | otherwise = Nothing
 
-bufferToken :: String -> State (Maybe Token, String) String
+bufferToken :: String -> State (String, Maybe Token) String
 bufferToken (char:blob) = do
-  (token, buffer) <- get
+  (buffer, _) <- get
   let buffer' = buffer ++ [char]
-      token' = classify buffer'
+      token'  = classify buffer'
   if isNothing token'
     then do
-    put (token', "")
+    put ("", Nothing)
     return blob
     else do
-    put (token', buffer')
+    put (buffer', token')
     bufferToken blob
-bufferToken _ = return ""
+bufferToken = return
+
+bufferTokens :: String -> State [Token] String
+bufferTokens blob = do
+  --tokens <- get
+  let (token, _) = runState (bufferToken blob) ("", Nothing)
+  put ([] ++ [token])
+  return "ok"
 
 tokens :: String -> [Token]
-tokens text = [Literal "foo"]
+tokens blob = snd $ (runState (bufferTokens blob) [])
