@@ -1,6 +1,7 @@
 module SyntaxAnalyzer (parse) where
 
 import Token
+import Control.Monad.State
 
 data Expr = Expr [Expr] | Atom Token
 

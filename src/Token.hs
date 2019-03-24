@@ -8,4 +8,6 @@ data Token =
   | Symbol String
   | Number String
   | Literal String
+  | Whitespace
+  | Comment
   deriving (Eq, Show)
