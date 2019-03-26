@@ -1,27 +1,26 @@
 module LexicalAnalyzer (tokens) where
 
 import Token
-import Data.Maybe
-import Data.List
-import qualified Text.Regex as R
+import Text.Regex
 
-comment = (R.mkRegex ";.*$", const Comment)
-multilineComment = (R.mkRegex "\\|\\#(.|\n)*?\\#\\|", const Comment)
-openParenthesis = (R.mkRegex "(", const OpenParenthesis)
-closeParenthesis = (R.mkRegex ")", const CloseParenthesis)
-quote = (R.mkRegex "'|quote", const Quote)
-define = (R.mkRegex "define", const Define)
-whitespace = (R.mkRegex "\\s+", const Whitespace)
-number = (R.mkRegex "[0-9]+", \text -> Number text)
-literal = (R.mkRegex "\"((\\\")|[^\"])*\"", \text -> Literal text)
-symbol = (R.mkRegex "[^\\s()\\[\\]{}'\";]+", \text -> Symbol text)
+regexs :: [(String -> Token, Regex)]
+regexs = [ (const Comment, mkRegex ";.*$")
+         , (const Comment, mkRegex "\\|\\#(.|\n)*?\\#\\|")
+         , (const OpenParenthesis, mkRegex "(")
+         , (const CloseParenthesis, mkRegex ")")
+         , (const Quote, mkRegex "'|quote")
+         , (const Define, mkRegex "define")
+         , (const Whitespace, mkRegex "\\s+")
+         , (Number, mkRegex "[0-9]+")
+         , (Literal, mkRegex "\"((\\\")|[^\"])*\"")
+         , (Symbol, mkRegex "[^\\s()\\[\\]{}'\";]+")
+         ]
 
-nextMatch :: (R.Regex, String -> Token) -> String -> Maybe (String, Token, String)
-nextMatch (regex, token) text =
-  let match = R.matchRegexAll regex text
-      match' (Just (before, matched, after, _)) = Just (before, token matched, after)
-      match' _ = Nothing
-  in Nothing
+match :: String -> (String -> Token, Regex) -> Maybe (String, Token, String)
+match text (token, regex) = match' (matchRegexAll regex text)
+  where match' (Just (before, matched, after, _)) =
+          Just (before, token matched, after)
+        match' _ = Nothing
 
 tokens :: String -> [Token]
 tokens text = []
