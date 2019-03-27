@@ -4,33 +4,6 @@ import Token
 import Text.Regex
 
 type TokenRegex = (String -> Token, Regex)
-
-data TokenMatch = TokenMatch (Token, String, String, String)
-instance Eq TokenMatch where
-    (==) (TokenMatch (_, b, m, _)) (TokenMatch (_, b', m', _)) =
-      length b >= length b' && length m >= length m'
-instance Ord TokenMatch where
-  compare first second
-    | first < second = LT
-    | first > second = GT
-    | otherwise = EQ
-  (<) (TokenMatch (_, b, m, _)) (TokenMatch (_, b', m', _)) =
-    length b < length b' && length m < length m'
-  (<=) (TokenMatch (_, b, m, _)) (TokenMatch (_, b', m', _)) =
-    length b <= length b' && length m <= length m'
-  (>) (TokenMatch (_, b, m, _)) (TokenMatch (_, b', m', _)) =
-    length b > length b' && length m > length m'
-  (>=) (TokenMatch (_, b, m, _)) (TokenMatch (_, b', m', _)) =
-    length b >= length b' && length m >= length m'
-  min first second
-    | first < second = first
-    | first > second = second
-    | otherwise = first
-  max first second
-    | first < second = second
-    | first > second = first
-    | otherwise = first
-
 regexs :: [TokenRegex]
 regexs = [ (const Comment, mkRegex ";.*$")
          , (const Comment, mkRegex "\\|\\#(.|\n)*?\\#\\|")
@@ -43,6 +16,14 @@ regexs = [ (const Comment, mkRegex ";.*$")
          , (Literal, mkRegex "\"((\\\")|[^\"])*\"")
          , (Symbol, mkRegex "[^\\s()\\[\\]{}'\";]+")
          ]
+
+data TokenMatch = TokenMatch (Token, String, String, String)
+instance Eq TokenMatch where
+  (==) (TokenMatch (_, b, m, _)) (TokenMatch (_, b', m', _)) =
+    length b >= length b' && length m >= length m'
+instance Ord TokenMatch where
+  (<=) (TokenMatch (_, b, m, _)) (TokenMatch (_, b', m', _)) =
+    length b <= length b' && length m <= length m'
 
 match :: String -> TokenRegex -> Maybe TokenMatch
 match text (token, regex) = (matchRegexAll regex text) >>= (match')
