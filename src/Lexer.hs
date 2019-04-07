@@ -1,4 +1,4 @@
-module LexicalAnalyzer (tokens) where
+module Lexer (tokens) where
 
 import Token
 import Text.Regex
@@ -9,8 +9,6 @@ regexs = [ (const Comment, mkRegex ";.*$")
          , (const Comment, mkRegex "\\|\\#(.|\n)*?\\#\\|")
          , (const OpenParenthesis, mkRegex "(")
          , (const CloseParenthesis, mkRegex ")")
-         , (const Quote, mkRegex "'|quote")
-         , (const Define, mkRegex "define")
          , (const Whitespace, mkRegex "\\s+")
          , (Number, mkRegex "[0-9]+")
          , (Literal, mkRegex "\"((\\\")|[^\"])*\"")

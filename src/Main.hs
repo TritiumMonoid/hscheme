@@ -1,6 +1,6 @@
 module Main where
 
-import LexicalAnalyzer
+import Lexer
 
 main :: IO ()
 main = do
